@@ -47,19 +47,18 @@ defmodule Day19 do
 
 
   def parse([head|rest], {:literal, head}, _) do
-    rest
+    [rest]
   end
 
-
   def parse(msg, {:sequence, seq}, rules_db) do
-    Enum.reduce(seq, msg, fn rule, msg ->
-      seq && parse(msg, rule, rules_db)
+    Enum.reduce(seq, [msg], fn rule, msg ->
+      Enum.flat_map(msg, &parse(&1, rule, rules_db))
     end)
   end
 
   def parse(msg, {:alternatives, alts}, rules_db) do
-    Enum.reduce(alts, nil, fn rule, so_far ->
-      so_far || parse(msg, rule, rules_db)
+    Enum.reduce(alts, [], fn rule, so_far ->
+      Enum.concat(so_far, parse(msg, rule, rules_db))
     end)
   end
 
@@ -68,11 +67,11 @@ defmodule Day19 do
   end
 
   def parse(_, _, _) do
-    nil
+    []
   end
 
   def matches?(msg, rule, rules_db) do
-    if parse(msg, rule, rules_db) == [] do
+    if Enum.reduce(parse(msg, rule, rules_db), false, &(&2 || &1 == [])) do
       1
     else
       0
@@ -90,6 +89,16 @@ defmodule Day19 do
 
 
   def run_b do
+    {rules, msgs} = read_data("day19_input.txt")
+
+    rules = rules
+    |> Map.put(8, {:alternatives, [{:sequence, [{:rule, 42}]}, {:sequence, [{:rule, 42}, {:rule, 8}]}]})
+    |> Map.put(11, {:alternatives, [{:sequence, [{:rule, 42}, {:rule, 31}]}, {:sequence, [{:rule, 42}, {:rule, 11}, {:rule, 31}]}]})
+
+    msgs
+    |> Enum.map(&(matches?(&1, {:rule, 0}, rules)))
+    |> Enum.sum
+    |> IO.puts
   end
 
 

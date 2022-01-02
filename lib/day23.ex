@@ -15,36 +15,25 @@ defmodule Day23 do
   defp rotate(current, [current|rest]), do: rest++[current]
   defp rotate(current, [other|rest]), do: rotate(current, rest++[other])
 
-  defp try_insert([], _, _) do
-    nil
-  end
-
-  defp try_insert([k|rest_deck], k, threes) do
-    [k|threes] ++ rest_deck
+  defp try_insert([k|rest_deck], k, [a, b, c]) do
+    [k, a, b, c | rest_deck]
   end
 
   defp try_insert([other|rest_deck], k, threes) do
-    inserted_rest = try_insert(rest_deck, k, threes)
-    if inserted_rest do
-      [other|inserted_rest]
-    else
-      nil
-    end
+    [other|try_insert(rest_deck, k, threes)]
   end
 
+  defp insert(deck, v, [v, _, _]=threes), do: insert(deck, v-1, threes)
+  defp insert(deck, v, [_, v, _]=threes), do: insert(deck, v-1, threes)
+  defp insert(deck, v, [_, _, v]=threes), do: insert(deck, v-1, threes)
   defp insert(deck, 0, threes), do: insert(deck, Enum.max(deck), threes)
   defp insert(deck, cup, threes) do
-    res = try_insert(deck, cup, threes)
-    if res do
-      res
-    else
-      insert(deck, cup-1, threes)
-    end
+    try_insert(deck, cup, threes)
   end
 
 
-  defp move([current, t1, t2, t3|rest]=d) do
-    #IO.puts("move #{inspect(d)}")
+  defp move(_id, [current, t1, t2, t3|rest]) do
+    #IO.puts("move #{id}: #{inspect([current, t1, t2, t3|rest])}")
     deck = [current|rest]
     destination_cup = current-1
     deck = insert(deck, destination_cup, [t1, t2, t3])
@@ -52,19 +41,29 @@ defmodule Day23 do
 
   end
 
-  defp minus_1([1|deck]), do: deck
-  defp minus_1([a|rest]), do: minus_1(rest ++ [a])
+  defp minus_1([1|deck], rev), do: deck ++ Enum.reverse(rev)
+  defp minus_1([a|rest], rev), do: minus_1(rest, [a|rev])
+
+  defp minus_1(deck), do: minus_1(deck, [])
 
   def run_a do
     #deck = read_data("389125467")
     deck = read_data("364297581")
-    Enum.reduce(1..100, deck, fn _, d -> move(d) end)
+    Enum.reduce(1..100, deck, &move/2)
     |> minus_1
-    |> Enum.map(&(&1+?0))
+    |> Enum.map(&Integer.to_string/1)
+    |> Enum.join("")
     |> IO.puts
   end
 
 
   def run_b do
+    deck = read_data("389125467")
+    #deck = read_data("364297581")
+    deck = Enum.concat(deck, 10..1000000)
+
+    [a, b | _] = Enum.reduce(1..1000, deck, &move/2)
+    |> minus_1
+    IO.puts(a*b)
   end
 end

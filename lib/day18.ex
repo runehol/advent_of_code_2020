@@ -1,9 +1,6 @@
 #! /usr/bin/env elixir
 
-
 defmodule Day18 do
-
-
   defp read_data(fname) do
     File.read!(fname)
     |> String.split("\n", trim: true)
@@ -13,7 +10,8 @@ defmodule Day18 do
     end)
   end
 
-  defp term1([v | rest]) when v >= ?0 and v <= ?9, do: {v-?0, rest}
+  defp term1([v | rest]) when v >= ?0 and v <= ?9, do: {v - ?0, rest}
+
   defp term1([?( | rest]) do
     {value, rest2} = exp1(rest)
     [?) | rest3] = rest2
@@ -22,12 +20,12 @@ defmodule Day18 do
 
   defp rest_exp1(value, [?+ | rest]) do
     {value2, rest2} = term1(rest)
-    rest_exp1(value+value2, rest2)
+    rest_exp1(value + value2, rest2)
   end
 
   defp rest_exp1(value, [?* | rest]) do
     {value2, rest2} = term1(rest)
-    rest_exp1(value*value2, rest2)
+    rest_exp1(value * value2, rest2)
   end
 
   defp rest_exp1(value, tokens) do
@@ -45,14 +43,16 @@ defmodule Day18 do
   end
 
   def run_a do
-    lines = read_data("day18_input.txt")
+    lines = read_data("data/day18_input.txt")
+
     lines
     |> Enum.map(&eval1/1)
-    |> Enum.sum
-    |> IO.puts
+    |> Enum.sum()
+    |> IO.puts()
   end
 
-  defp factor([v | rest]) when v >= ?0 and v <= ?9, do: {v-?0, rest}
+  defp factor([v | rest]) when v >= ?0 and v <= ?9, do: {v - ?0, rest}
+
   defp factor([?( | rest]) do
     {value, rest2} = exp(rest)
     [?) | rest3] = rest2
@@ -61,7 +61,7 @@ defmodule Day18 do
 
   defp rest_term(value, [?+ | rest]) do
     {value2, rest2} = factor(rest)
-    rest_term(value+value2, rest2)
+    rest_term(value + value2, rest2)
   end
 
   defp rest_term(value, tokens) do
@@ -73,10 +73,9 @@ defmodule Day18 do
     rest_term(value, tokens2)
   end
 
-
   defp rest_exp(value, [?* | rest]) do
     {value2, rest2} = term(rest)
-    rest_exp(value*value2, rest2)
+    rest_exp(value * value2, rest2)
   end
 
   defp rest_exp(value, tokens) do
@@ -94,15 +93,13 @@ defmodule Day18 do
   end
 
   def run_b do
-    lines = read_data("day18_input.txt")
+    lines = read_data("data/day18_input.txt")
+
     lines
     |> Enum.map(&eval/1)
-    |> Enum.sum
-    |> IO.puts
+    |> Enum.sum()
+    |> IO.puts()
   end
-
-
-
 end
 
 Day18.run_a()

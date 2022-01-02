@@ -1,8 +1,6 @@
 #! /usr/bin/env elixir
 
-
 defmodule Day1 do
-
   defp read_data(fname) do
     File.read!(fname)
     |> String.split("\n", trim: true)
@@ -11,7 +9,7 @@ defmodule Day1 do
 
   defp maybe_double_sum(a, b) do
     if a + b == 2020 do
-      [a*b]
+      [a * b]
     else
       []
     end
@@ -19,35 +17,33 @@ defmodule Day1 do
 
   defp maybe_triple_sum(a, b, c) do
     if a + b + c == 2020 do
-      [a*b*c]
+      [a * b * c]
     else
       []
     end
   end
 
   def run_a do
-    numbers = read_data("day1_input.txt")
+    numbers = read_data("data/day1_input.txt")
 
     res = for a <- numbers, b <- numbers, do: maybe_double_sum(a, b)
 
     res
-    |> Enum.concat
+    |> Enum.concat()
     |> Enum.at(0)
-    |> IO.inspect
+    |> IO.inspect()
   end
 
   def run_b do
-    numbers = read_data("day1_input.txt")
+    numbers = read_data("data/day1_input.txt")
 
     res = for a <- numbers, b <- numbers, c <- numbers, do: maybe_triple_sum(a, b, c)
 
     res
-    |> Enum.concat
+    |> Enum.concat()
     |> Enum.at(0)
-    |> IO.inspect
+    |> IO.inspect()
   end
-
-
 end
 
 Day1.run_a()

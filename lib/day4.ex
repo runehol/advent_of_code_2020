@@ -1,8 +1,6 @@
 #! /usr/bin/env elixir
 
-
 defmodule Day4 do
-
   defp read_data(fname) do
     File.read!(fname)
     |> String.split("\n\n", trim: true)
@@ -14,27 +12,25 @@ defmodule Day4 do
         [k, v] = String.split(entry, ":")
         {String.to_atom(k), v}
       end)
-      |> Map.new
+      |> Map.new()
     end)
   end
 
   defp to_int(false), do: 0
   defp to_int(true), do: 1
 
-
   defp valid_a(%{byr: _, iyr: _, eyr: _, hgt: _, hcl: _, ecl: _, pid: _}) do
     true
   end
+
   defp valid_a(_), do: false
 
-
-
   def run_a do
-    read_data("day4_input.txt")
+    read_data("data/day4_input.txt")
     |> Enum.map(&valid_a/1)
     |> Enum.map(&to_int/1)
-    |> Enum.sum
-    |> IO.inspect
+    |> Enum.sum()
+    |> IO.inspect()
   end
 
   defp valid_int(v, min, max) do
@@ -65,8 +61,10 @@ defmodule Day4 do
 
   defp valid_height(hgt) do
     v = Regex.run(~r/(\d+)(cm|in)/, hgt)
+
     if v do
       [_, height, measure] = v
+
       case measure do
         "in" -> valid_int(height, 59, 76)
         "cm" -> valid_int(height, 150, 193)
@@ -79,26 +77,23 @@ defmodule Day4 do
 
   defp valid_b(%{byr: byr, iyr: iyr, eyr: eyr, hgt: hgt, hcl: hcl, ecl: ecl, pid: pid}) do
     valid_int(byr, 1920, 2002) and
-    valid_int(iyr, 2010, 2020) and
-    valid_int(eyr, 2020, 2030) and
-    valid_height(hgt) and
-    valid_hair_color(hcl) and
-    valid_eye_color(ecl) and
-    valid_passport_id(pid)
+      valid_int(iyr, 2010, 2020) and
+      valid_int(eyr, 2020, 2030) and
+      valid_height(hgt) and
+      valid_hair_color(hcl) and
+      valid_eye_color(ecl) and
+      valid_passport_id(pid)
   end
 
   defp valid_b(_), do: false
 
-
   def run_b do
-    read_data("day4_input.txt")
+    read_data("data/day4_input.txt")
     |> Enum.map(&valid_b/1)
     |> Enum.map(&to_int/1)
-    |> Enum.sum
-    |> IO.inspect
+    |> Enum.sum()
+    |> IO.inspect()
   end
-
-
 end
 
 Day4.run_a()

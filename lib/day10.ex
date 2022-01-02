@@ -38,5 +38,4 @@ defmodule Day10 do
 
     IO.puts(count_combinations(adapters))
   end
-
 end

@@ -31,6 +31,3 @@ defmodule Day15 do
     IO.puts(Enum.at(generate([0, 5, 4, 1, 10, 14, 7]), 30_000_000 - 1))
   end
 end
-
-Day15.run_a()
-Day15.run_b()

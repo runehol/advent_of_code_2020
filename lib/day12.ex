@@ -89,6 +89,3 @@ defmodule Day12 do
     IO.puts(abs(long) + abs(lat))
   end
 end
-
-Day12.run_a()
-Day12.run_b()

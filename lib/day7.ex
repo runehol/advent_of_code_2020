@@ -69,6 +69,3 @@ defmodule Day7 do
     IO.puts(n_bags("shiny gold", rules) - 1)
   end
 end
-
-Day7.run_a()
-Day7.run_b()

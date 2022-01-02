@@ -50,6 +50,3 @@ defmodule Day3 do
     |> IO.puts()
   end
 end
-
-Day3.run_a()
-Day3.run_b()

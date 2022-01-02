@@ -52,5 +52,3 @@ defmodule Day9 do
     IO.puts(find_new_sum(stream, non_sum))
   end
 end
-
-Day9.run_ab()

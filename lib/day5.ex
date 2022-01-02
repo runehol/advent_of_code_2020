@@ -36,6 +36,3 @@ defmodule Day5 do
     end)
   end
 end
-
-Day5.run_a()
-Day5.run_b()

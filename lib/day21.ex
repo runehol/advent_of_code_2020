@@ -76,6 +76,3 @@ defmodule Day21 do
     |> IO.puts()
   end
 end
-
-Day21.run_a()
-Day21.run_b()

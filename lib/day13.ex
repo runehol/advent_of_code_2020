@@ -83,6 +83,3 @@ defmodule Day13 do
     IO.puts(first_time)
   end
 end
-
-Day13.run_a()
-Day13.run_b()

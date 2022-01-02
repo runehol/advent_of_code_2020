@@ -45,6 +45,3 @@ defmodule Day1 do
     |> IO.inspect()
   end
 end
-
-Day1.run_a()
-Day1.run_b()

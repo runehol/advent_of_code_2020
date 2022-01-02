@@ -119,6 +119,3 @@ defmodule Day16 do
     |> IO.puts()
   end
 end
-
-Day16.run_a()
-Day16.run_b()

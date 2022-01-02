@@ -101,5 +101,3 @@ defmodule Day8 do
     IO.puts("Star 2: #{acc}")
   end
 end
-
-Day8.run_ab()

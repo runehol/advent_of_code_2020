@@ -117,6 +117,3 @@ defmodule Day14 do
     Map.values(memory) |> Enum.sum() |> IO.puts()
   end
 end
-
-Day14.run_a()
-Day14.run_b()

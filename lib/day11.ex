@@ -120,6 +120,3 @@ defmodule Day11 do
     IO.puts(Enum.sum(Map.values(final_state)))
   end
 end
-
-Day11.run_a()
-Day11.run_b()

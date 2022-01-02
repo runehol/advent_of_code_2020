@@ -14,7 +14,7 @@ defmodule TileMap do
   @type fingerprint :: integer()
   @type tile_id :: integer()
   @type tile_signature :: {{integer, integer}, {integer, integer}}
-  @type raw_map :: %{coord() => integer()}
+  @type raw_map :: MapSet.t(coord())
   @type oriented_tile :: {tile_id(), tile_signature(), raw_map()}
   @type edge_candidate :: {fingerprint(), direction(), orientation()}
   @type unfinished_edge :: {coord(), edge_candidate()}
@@ -116,9 +116,14 @@ defmodule TileMap do
 
   @spec assemble_map(t(), integer()) :: raw_map()
   def assemble_map(%TileMap{tile_map: tile_map}, tile_size) do
-    Enum.reduce(tile_map, %{}, fn {{tile_y, tile_x}, {_, elements}}, m ->
-      Enum.reduce(elements, m, fn {{local_y, local_x}, v}, m ->
-        Map.put(m, {tile_y*tile_size + local_y, tile_x*tile_size + local_x}, v)
+    shrunk_tile_size = tile_size-2
+    Enum.reduce(tile_map, MapSet.new, fn {{tile_y, tile_x}, {_, elements}}, m ->
+      Enum.reduce(elements, m, fn {local_y, local_x}, m ->
+        if local_y == 0 or local_y == tile_size-1 or local_x == 0 or local_x == tile_size-1 do
+          m
+        else
+          MapSet.put(m, {-1+tile_y*shrunk_tile_size + local_y, -1+tile_x*shrunk_tile_size + local_x})
+        end
       end)
     end)
 
@@ -127,6 +132,23 @@ end
 
 defmodule Day20 do
   @tile_size 10
+
+  defp read_raw_map(lines) do
+    lines
+    |> Enum.with_index(fn line, y ->
+      String.to_charlist(line)
+      |> Enum.with_index(fn ch, x ->
+        if ch == ?# do
+          [{y, x}]
+        else
+          []
+        end
+      end)
+    end)
+    |> Enum.concat()
+    |> Enum.concat()
+    |> MapSet.new()
+  end
 
   @spec read_tile(String.t()) :: {TileMap.tile_id(), TileMap.raw_map()}
   defp read_tile(line_str) do
@@ -137,18 +159,7 @@ defmodule Day20 do
 
     map =
       Enum.drop(lines, 1)
-      |> Enum.with_index(fn line, y ->
-        String.to_charlist(line)
-        |> Enum.with_index(fn ch, x ->
-          if ch == ?# do
-            {{y, x}, ?1}
-          else
-            {{y, x}, ?0}
-          end
-        end)
-      end)
-      |> Enum.concat()
-      |> Map.new()
+      |> read_raw_map()
 
     {id, map}
   end
@@ -164,12 +175,12 @@ defmodule Day20 do
 
   @spec flip_tile(TileMap.raw_map()) :: TileMap.raw_map()
   defp flip_tile(m) do
-    for {{y, x}, v} <- m, into: %{}, do: {{x, y}, v}
+    for {y, x} <- m, into: MapSet.new, do: {x, y}
   end
 
   @spec rotate_tile_90(TileMap.raw_map()) :: TileMap.raw_map()
   defp rotate_tile_90(m) do
-    for {{y, x}, v} <- m, into: %{}, do: {{@tile_size - 1 - x, y}, v}
+    for {y, x} <- m, into: MapSet.new, do: {@tile_size - 1 - x, y}
   end
 
   @spec all_tile_rotations(TileMap.raw_map()) :: list(TileMap.raw_map())
@@ -185,7 +196,9 @@ defmodule Day20 do
   @spec extract_fingerprint(TileMap.raw_map(), Enum.t(), Enum.t()) :: integer()
   defp extract_fingerprint(m, ys, xs) do
     Enum.zip(ys, xs)
-    |> Enum.map(fn {y, x} -> Map.get(m, {y, x}) end)
+    |> Enum.map(fn {y, x} ->
+      if MapSet.member?(m, {y, x}), do: ?1, else: ?0
+     end)
     |> List.to_integer(2)
   end
 
@@ -193,7 +206,7 @@ defmodule Day20 do
     Stream.cycle([v])
   end
 
-  @spec extract_signature({TileMap.tile_id(), map}) :: TileMap.oriented_tile()
+  @spec extract_signature({TileMap.tile_id(), TileMap.raw_map()}) :: TileMap.oriented_tile()
   def extract_signature({tile_id, m}) do
     max = @tile_size - 1
 
@@ -248,10 +261,38 @@ defmodule Day20 do
     end)
   end
 
+  @sea_monster [
+    "                  # ",
+    "#    ##    ##    ###",
+    " #  #  #  #  #  #   "
+  ]
 
+  @spec sea_monster_map :: list({integer(), integer()})
+  def sea_monster_map() do
+    for {y, x} <- read_raw_map(@sea_monster), do: {y-1,x}
+  end
 
+  @spec print_raw_map(TileMap.raw_map()) :: any
+  def print_raw_map(raw_map) do
+    {ys, xs} = Enum.unzip(raw_map)
+    min_y = Enum.min(ys)
+    max_y = Enum.max(ys)
+    min_x = Enum.min(xs)
+    max_x = Enum.max(xs)
+
+    Enum.map(min_y..max_y, fn y ->
+      [Enum.map(min_x..max_x, fn x ->
+        if MapSet.member?(raw_map, {y, x}), do: ?#, else: ?.
+      end),
+      "\n"]
+    end)
+    |> IO.puts
+
+  end
+
+  @spec run_a :: integer
   def run_a do
-    tiles = read_data("data/day20_test_input.txt")
+    tiles = read_data("data/day20_input.txt")
     tile_candidate_map = make_tile_candidate_map(tiles)
     first_tile = extract_signature(hd(tiles))
 
@@ -263,10 +304,53 @@ defmodule Day20 do
     final_tile_map = assemble_tiles(n_tiles-1, tile_map, tile_candidate_map)
 
     TileMap.get_corner_product(final_tile_map)
-    TileMap.assemble_map(final_tile_map, @tile_size)
+  end
 
+  @spec present_at_pos(TileMap.raw_map(), TileMap.coord(), [TileMap.coord()]) :: boolean()
+  def present_at_pos(map, {y, x}, pattern) do
+    Enum.reduce_while(pattern, true, fn {ly, lx}, _ ->
+      if MapSet.member?(map, {y+ly, x+lx}) do
+        {:cont, true}
+      else
+        {:halt, false}
+      end
+    end)
+  end
+
+  @spec count_pattern_instances(TileMap.raw_map(), [TileMap.coord()]) :: integer()
+  def count_pattern_instances(map, pattern) do
+    Enum.reduce(map, 0, fn pos, found_so_far ->
+      if present_at_pos(map, pos, pattern) do
+        found_so_far+1
+      else
+        found_so_far
+      end
+    end)
   end
 
   def run_b do
+    tiles = read_data("data/day20_input.txt")
+    tile_candidate_map = make_tile_candidate_map(tiles)
+    first_tile = extract_signature(hd(tiles))
+
+    n_tiles = length(tiles)
+
+    {:ok, tile_map} = TileMap.new
+    |> TileMap.maybe_insert({0, 0}, first_tile)
+
+    final_tile_map = assemble_tiles(n_tiles-1, tile_map, tile_candidate_map)
+
+    assembled_map = final_tile_map
+    |> TileMap.assemble_map(@tile_size)
+
+    monster = sea_monster_map()
+
+    n_seamonsters = assembled_map
+    |> all_tile_flips_rotations
+    |> Enum.map(fn m -> count_pattern_instances(m, monster) end)
+    |> Enum.max
+
+    choppiness = MapSet.size(assembled_map) - n_seamonsters * length(monster)
+    choppiness
   end
 end
